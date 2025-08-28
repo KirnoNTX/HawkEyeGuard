@@ -1,3 +1,9 @@
+##################################
+#                                #
+#       Guard Version 1.0.1      #
+#                                #
+##################################
+
 import json
 import os
 import subprocess
@@ -104,8 +110,12 @@ def refresh_config_from_url() -> bool:
     except Exception:
         cur = None
     if cur is not None and cur == data:
+        print("[OK] Config no change")
         return False
-    return write_bytes(CONFIG_PATH, data)
+    ok = write_bytes(CONFIG_PATH, data)
+    if ok:
+        print("[OK] Config changed")
+    return ok
 
 def parse_message(cfg: Dict[str, Any]) -> Tuple[bool, Optional[str], int, str]:
     if not isinstance(cfg, dict):
@@ -136,9 +146,9 @@ def show_message(text: str, duration_seconds: int) -> bool:
 
 def apply_guard(interval_seconds: int, poll_seconds: int) -> int:
     if interval_seconds < 1:
-        interval_seconds = 5
-    if poll_seconds < 5:
-        poll_seconds = 15
+        interval_seconds = 1
+    if poll_seconds < 1:
+        poll_seconds = 1
     print("[OK] Guard running every", interval_seconds, "seconds")
     last_poll = 0.0
     last_sig = ""
@@ -170,10 +180,10 @@ def apply_guard(interval_seconds: int, poll_seconds: int) -> int:
 
 def main() -> int:
     cfg = read_json(CONFIG_PATH)
-    interval_raw = cfg.get("interval_seconds", 5) if isinstance(cfg, dict) else 5
-    poll_raw = cfg.get("message_poll_seconds", 15) if isinstance(cfg, dict) else 15
-    interval = int(interval_raw) if isinstance(interval_raw, int) else 5
-    poll = int(poll_raw) if isinstance(poll_raw, int) else 15
+    interval_raw = cfg.get("interval_seconds", 2) if isinstance(cfg, dict) else 2
+    poll_raw = cfg.get("message_poll_seconds", 2) if isinstance(cfg, dict) else 2
+    interval = int(interval_raw) if isinstance(interval_raw, int) else 2
+    poll = int(poll_raw) if isinstance(poll_raw, int) else 2
     return apply_guard(interval, poll)
 
 if __name__ == "__main__":
