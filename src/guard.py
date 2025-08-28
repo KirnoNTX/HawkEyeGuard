@@ -132,17 +132,52 @@ def parse_message(cfg: Dict[str, Any]) -> Tuple[bool, Optional[str], int, str]:
     sig = f"{text or ''}|{dur}"
     return show and bool(text), text, dur, sig
 
-def show_message(text: str, duration_seconds: int) -> bool:
+def _candidate_msg_paths() -> List[str]:
+    sr = os.environ.get("SystemRoot", r"C:\Windows")
+    return [
+        os.path.join(sr, "System32", "msg.exe"),
+        os.path.join(sr, "Sysnative", "msg.exe"),
+        "msg.exe",
+        "msg",
+    ]
+
+def _run_msg(cmd: str, text: str, duration_seconds: int) -> bool:
     try:
-        r = subprocess.run(["msg", "*", "/time:" + str(duration_seconds), text], capture_output=True, text=True, check=False)
-        if r.returncode == 0:
-            print("[OK] Message sent")
-            return True
-        print("[FAIL] Message:", (r.stderr or r.stdout).strip())
+        r = subprocess.run([cmd, "*", "/time:" + str(duration_seconds), text], capture_output=True, text=True, check=False)
+        return r.returncode == 0
+    except FileNotFoundError:
         return False
     except Exception as e:
         print("[FAIL] Message exception:", str(e))
         return False
+
+def _powershell_popup(text: str, title: str) -> bool:
+    sr = os.environ.get("SystemRoot", r"C:\Windows")
+    ps1 = os.path.join(sr, "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+    ps2 = "powershell.exe"
+    script = "Add-Type -AssemblyName PresentationFramework; [System.Windows.MessageBox]::Show(@'%s'@,'%s') | Out-Null" % (text.replace("'", "''"), title.replace("'", "''"))
+    for ps in [ps1, ps2]:
+        try:
+            r = subprocess.run([ps, "-NoProfile", "-WindowStyle", "Hidden", "-Command", script], capture_output=True, text=True, check=False)
+            if r.returncode == 0:
+                print("[OK] Message sent (PowerShell)")
+                return True
+        except FileNotFoundError:
+            continue
+        except Exception as e:
+            print("[FAIL] Message exception:", str(e))
+            continue
+    return False
+
+def show_message(text: str, duration_seconds: int) -> bool:
+    for cmd in _candidate_msg_paths():
+        if _run_msg(cmd, text, duration_seconds):
+            print("[OK] Message sent")
+            return True
+    if _powershell_popup(text, "HawkEyeGuard"):
+        return True
+    print("[FAIL] Message all methods failed")
+    return False
 
 def apply_guard(interval_seconds: int, poll_seconds: int) -> int:
     if interval_seconds < 1:
