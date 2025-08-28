@@ -1,5 +1,5 @@
 {
-  "interval_seconds": 10,
+  "interval_seconds": 3,
   "urls": {
     "config": "https://api.natyx.net/hawkeye/config.json",
     "blacklist": "https://api.natyx.net/hawkeye/blacklist.json",
