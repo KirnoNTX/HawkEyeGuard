@@ -170,10 +170,10 @@ def apply_guard(interval_seconds: int, poll_seconds: int) -> int:
 
 def main() -> int:
     cfg = read_json(CONFIG_PATH)
-    interval_raw = cfg.get("interval_seconds", 5) if isinstance(cfg, dict) else 5
-    poll_raw = cfg.get("message_poll_seconds", 15) if isinstance(cfg, dict) else 15
-    interval = int(interval_raw) if isinstance(interval_raw, int) else 5
-    poll = int(poll_raw) if isinstance(poll_raw, int) else 15
+    interval_raw = cfg.get("interval_seconds", 2) if isinstance(cfg, dict) else 2
+    poll_raw = cfg.get("message_poll_seconds", 2) if isinstance(cfg, dict) else 2
+    interval = int(interval_raw) if isinstance(interval_raw, int) else 2
+    poll = int(poll_raw) if isinstance(poll_raw, int) else 2
     return apply_guard(interval, poll)
 
 if __name__ == "__main__":
