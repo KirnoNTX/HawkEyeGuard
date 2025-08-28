@@ -4,5 +4,10 @@
     "config": "https://api.natyx.net/hawkeye/config.json",
     "blacklist": "https://api.natyx.net/hawkeye/blacklist.json",
     "guard": "https://api.natyx.net/hawkeye/guard.py"
+  },
+  "message": {
+    "id": "none",
+    "text": "",
+    "duration_seconds": 60
   }
 }
