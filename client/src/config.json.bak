@@ -1,0 +1,14 @@
+{
+  "interval_seconds": 2,
+  "message_poll_seconds": 2,
+  "urls": {
+    "config": "https://api.natyx.net/hawkeye/config.json",
+    "blacklist": "https://api.natyx.net/hawkeye/blacklist.json",
+    "guard": "https://api.natyx.net/hawkeye/guard.py"
+  },
+  "message": {
+    "show": "hide",
+    "text": "Hello",
+    "duration_seconds": 99999
+  }
+}
