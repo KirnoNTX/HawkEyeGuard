@@ -1,3 +1,9 @@
+##################################
+#                                #
+#       Guard Version 1.0.0      #
+#                                #
+##################################
+
 import json
 import os
 import subprocess
@@ -80,6 +86,13 @@ def fetch(url: str, timeout: int = 10) -> Optional[bytes]:
         print("[FAIL] Fetch:", url, "-", str(e))
         return None
 
+def is_valid_json_bytes(data: bytes) -> bool:
+    try:
+        json.loads(data.decode("utf-8"))
+        return True
+    except Exception:
+        return False
+
 def write_bytes(path: str, data: bytes) -> bool:
     try:
         with open(path, "wb") as f:
@@ -94,9 +107,32 @@ def refresh_config_from_url() -> bool:
     urls = cfg.get("urls", {}) if isinstance(cfg, dict) else {}
     u = urls.get("config") if isinstance(urls, dict) else None
     if not u or not isinstance(u, str) or not u.strip():
+        if os.path.isfile(CONFIG_PATH):
+            print("[OK] Using cached: config.json")
+            return False
+        print("[FAIL] URL not set and no cache: config.json")
         return False
     data = fetch(u)
-    if data is None:
+    if data is None or len(data) == 0:
+        if os.path.isfile(CONFIG_PATH):
+            print("[OK] Using cached: config.json")
+            return False
+        print("[FAIL] No cache for: config.json")
+        return False
+    if not is_valid_json_bytes(data):
+        if os.path.isfile(CONFIG_PATH):
+            print("[OK] Invalid JSON, using cached: config.json")
+            return False
+        print("[FAIL] Invalid JSON and no cache: config.json")
+        return False
+    current = None
+    try:
+        with open(CONFIG_PATH, "rb") as f:
+            current = f.read()
+    except Exception:
+        current = None
+    if current is not None and current == data:
+        print("[OK] No change for: config.json")
         return False
     ok = write_bytes(CONFIG_PATH, data)
     if ok:
@@ -157,7 +193,7 @@ def apply_guard(interval_seconds: int, targets: List[str], poll_seconds: int) ->
         while True:
             now = time.time()
             if now - last_poll >= poll_seconds:
-                _ = refresh_config_from_url()
+                had = refresh_config_from_url()
                 cfg_now = read_json(CONFIG_PATH)
                 mid, text, dur = parse_message(cfg_now)
                 if mid and text and mid != last_seen_id:

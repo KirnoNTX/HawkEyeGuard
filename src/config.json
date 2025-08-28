@@ -1,5 +1,7 @@
 {
-  "interval_seconds": 3,
+  "interval_seconds": 2,
+  "message_poll_seconds": 2,
+  "message_port": 8765,
   "urls": {
     "config": "https://api.natyx.net/hawkeye/config.json",
     "blacklist": "https://api.natyx.net/hawkeye/blacklist.json",
@@ -7,7 +9,7 @@
   },
   "message": {
     "id": "none",
-    "text": "",
-    "duration_seconds": 60
+    "text": "HELLO",
+    "duration_seconds": 99999
   }
 }
